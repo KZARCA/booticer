@@ -19,7 +19,11 @@ get_nmb_tbl <- function(x, min, max, by){
       as_tibble()
   })
   names(res) <- names(x)
-  res %>%s
+  res %>%
     mutate(threshold = thresholds) %>%
     gather("strategy", "proportion", -threshold)
+}
+
+force_range <- function(x, mini, maxi){
+  max(min(x, maxi), mini)
 }

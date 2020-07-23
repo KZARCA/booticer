@@ -10,6 +10,24 @@ plot_ce <- function(x, xlab = "Delta Effectiveness", ylab = "Delta Cost", unit_x
     theme_bw()
 }
 
+#' Get proportion of bootstrapped ICERs in each quadrant
+#'
+#' @param x an object created with get_differences function
+#'
+#' @param strategy the strategy that you want to analyse
+#'
+#' @export
+get_quadrant_prop <- function(x, strategy){
+  tab <- dplyr::filter(x, strategy == !!strategy)
+  nr <- nrow(tab)
+  NW <- dplyr::filter(tab, d_cost > 0 & d_eff < 0)
+  NE <- dplyr::filter(tab, d_cost > 0 & d_eff > 0)
+  SW <- dplyr::filter(tab, d_cost < 0 & d_eff < 0)
+  SE <- dplyr::filter(tab, d_cost < 0 & d_eff > 0)
+  quadrants <- list(NW = NW, NE = NE, SW = SW, SE = SE)
+  purrr::map_dbl(quadrants, function(x) nrow(x) / nr)
+}
+
 #' @export
 plot_ac <- function(x, min = 0, max = 100000, by = (max - min) /100,
                     xlab = "Cost-effectiveness Threshold", unit = "€/QALY", sep1000 = " ",
@@ -24,19 +42,20 @@ plot_ac <- function(x, min = 0, max = 100000, by = (max - min) /100,
 }
 
 #' @export
-export_image <- function (path, extension, dpi, hauteur, savePlotDesc, plotDesc, savePlotBivar, plotBivar) {
-    graph <- plotDesc[[n]]
+export_image <- function (path, extension, dpi, height, plot) {
+  name <- quo_name(enquo(plot))
+ # extension <- "tiff"
+    graph <- plot
     if (!is.null(graph$labels$fill) & is.null(graph$guides$fill) | !is.null(graph$labels$colour) | !is.null(graph$mapping$x) && quo_name(graph$mapping$x) == "time"){
       base_aspect_ratio <- 4/3
     }
     do.call("ggsave", c(
       list(
-        filename = sprintf("%s/desc%d.%s", path, n, extension),
-        plot = graph %>% add_watermark(show = FALSE), # + theme_bw(base_size = 10)  + theme(axis.title=element_text(size=10)),
+        filename = sprintf("%s/%s.%s", path, name, extension),
+        plot = graph,
         dpi = dpi,
-        #base_aspect_ratio = base_aspect_ratio,
-        height = hauteur / 2.54,
-        width = hauteur * base_aspect_ratio / 2.54),
+        height = height / 2.54,
+        width = height * base_aspect_ratio / 2.54),
       if(extension == "pdf") list(device = cairo_pdf),
       if (extension == "eps") list(encoding = "ISOLatin9"),
       if (extension == "tiff") list(compression = "lzw")))

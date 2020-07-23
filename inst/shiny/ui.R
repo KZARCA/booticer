@@ -12,7 +12,7 @@ shinyUI(dashboardPage(
     )),
     dashboardBody(
         useShinyjs(),
-        extendShinyjs("www/extended.js"),
+        #extendShinyjs(),
         tabItems(
             tabItem("home",
                     fluidRow(

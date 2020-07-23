@@ -36,15 +36,17 @@ shinyServer(function(session, input, output) {
                 textInput("costUnit", "Cost unit", "€"),
                 textInput("effUnit", "Effectiveness Unit", "QALY"),
                 radioButtons("sep1000", "Thousands Separator", choices = c("Comma" = ",", "Space" = " ", "None" = "")),
-            if (!is.null(values$tab)){
-                tagList(
-                    selectInput("reference", "Reference Strategy", unique(values$tab$strategy)),
-                    span(actionButton("start", "Start Bootstrap"), uiOutput("loading", inline = TRUE))
-                )
-            }
+                uiOutput("startBoot")
             )
         )
+    })
 
+    output$startBoot <- renderUI({
+        req(values$tab)
+        tagList(
+            selectInput("reference", "Reference Strategy", unique(values$tab$strategy)),
+            span(actionButton("start", "Start Bootstrap"), uiOutput("loading", inline = TRUE))
+        )
     })
 
     observeEvent(input$start, {
@@ -62,14 +64,22 @@ shinyServer(function(session, input, output) {
 
     output$plotCE <- renderPlot({
         req(values$means)
-        plot_ce(values$means %>% get_differences(reference = input$reference),
-                unit_x = input$effUnit, unit_y = input$costUnit, sep1000 = input$sep1000)
+        (values$plotCE <- plot_ce(values$means %>% get_differences(reference = input$reference),
+                unit_x = input$effUnit, unit_y = input$costUnit, sep1000 = input$sep1000))
     })
 
     output$plotAC <- renderPlot({
         req(values$means)
-        plot_ac(values$means, unit = paste(input$costUnit, input$effUnit, sep = "/"),
-                sep1000 = input$sep1000)
+        (values$plotAC <- plot_ac(values$means, unit = paste(input$costUnit, input$effUnit, sep = "/"),
+                sep1000 = input$sep1000))
+    })
+
+    output$options <- renderUI({
+        tagList(
+            selectInput("formatImg", "Figure extension", choices = c("jpg", "png", "pdf", "tiff", "eps" , "svg"), ifelse(!is.null(input$formatImg), input$formatImg, "png")),#,
+            numericInput("dpi", gettext("Résolution (DPI)"), value = ifelse(!is.null(input$dpi), input$dpi, 300)),
+            numericInput("height", gettext("Height (cm)"), value = ifelse(!is.null(input$height), input$height, 15))
+        )
     })
 
     output$allResults <- renderUI({
@@ -81,7 +91,10 @@ shinyServer(function(session, input, output) {
                # box(plot_ce(values$means %>% get_differences(reference = input$reference)))
            ),
            fluidRow(
-               actionButton("download", "DownloadFigures")
+               box(
+               uiOutput("options"),
+               downloadButton("download", "Download Figures")
+               )
            )
         )
     })
@@ -91,10 +104,15 @@ shinyServer(function(session, input, output) {
             gettextf('figures %s.zip', Sys.Date())
         },
         content = function(file) {
-            saveImg <- export_image(path, input$formatImg, borner(input$dpi, 72, 1200), borner(input$hauteur, 5, 100),
-                                    valeurs$savePlotDesc, plot_desc, valeurs$savePlotBivar, plot_bivar)
-            zip(file, c(paste0(path, "/analyses.Rmd"), sprintf("%s/fichier.%s", path, tools::file_ext(valeurs$fichier$name))), flags = "-j")
-            unlink(path, recursive = TRUE)
+            path <- file.path(tempdir(), "export")
+            dir.create(path)
+            plotCE <- values$plotCE
+            plotAC <- values$plotAC
+            saveCE <- export_image(path, input$formatImg, force_range(input$dpi, 72, 1200),
+                                    force_range(input$height, 5, 20), plotCE)
+            saveAC <- export_image(path, input$formatImg, force_range(input$dpi, 72, 1200),
+                                   force_range(input$height, 5, 20), plotAC)
+            zip(file, path, flags = "-jrm")
         }
     )
 
