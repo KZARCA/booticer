@@ -8,7 +8,7 @@ shinyServer(function(session, input, output) {
         ext <- tolower(tools::file_ext(file))
         if(ext %in% c("csv", "txt")){
             tab <- import_delim(file)
-        } else if (substr(ext, 3) == "xls"){
+        } else if (grepl("xls", ext)){
             tab <- readxl::read_excel(file, sheet = 1, guess_max = 10000, .name_repair = "minimal")
         }
         values$tab <- tab

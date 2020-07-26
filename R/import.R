@@ -1,3 +1,5 @@
+
+#' @export
 import_delim <- function(file, sep = "\t", dec = "."){
   tab <- NULL
   enc <- readr::guess_encoding(file, threshold = .9)$encoding[1]

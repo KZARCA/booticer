@@ -3,7 +3,6 @@
 \docType{package}
 \name{booticer}
 \alias{booticer}
-\alias{booticer-package}
 \title{booticer: Get bootstrapped ICER}
 \description{
 `booticer` is a R package created to easily produce cost-effectiveness planes and

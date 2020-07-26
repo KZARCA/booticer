@@ -24,6 +24,7 @@ get_nmb_tbl <- function(x, min, max, by){
     gather("strategy", "proportion", -threshold)
 }
 
+#' @export
 force_range <- function(x, mini, maxi){
   max(min(x, maxi), mini)
 }

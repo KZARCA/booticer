@@ -1,3 +1,4 @@
+library(dplyr)
 library(shiny)
 library(shinydashboard)
 library(shinyjs)
