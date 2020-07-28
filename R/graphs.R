@@ -25,7 +25,7 @@ get_quadrant_prop <- function(x, strategy){
   SW <- dplyr::filter(tab, d_cost < 0 & d_eff < 0)
   SE <- dplyr::filter(tab, d_cost < 0 & d_eff > 0)
   quadrants <- list(NW = NW, NE = NE, SW = SW, SE = SE)
-  purrr::map_dbl(quadrants, function(x) nrow(x) / nr)
+  purrr::map_dfc(quadrants, function(x) pourcent(nrow(x) / nr))
 }
 
 #' @export

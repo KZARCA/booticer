@@ -1,6 +1,3 @@
-library(shiny)
-library(booticer)
-
 shinyServer(function(session, input, output) {
     values <- reactiveValues()
     observeEvent(req(input$loadedTable), {
@@ -49,6 +46,26 @@ shinyServer(function(session, input, output) {
         )
     })
 
+    observeEvent(values$tab, {
+        if (!all(c("strategy", "effect", "cost") %in% names(values$tab))){
+            create_alert("Your column names must include at least 'cost', 'effect' and 'strategy' (lower case)")
+            values$tab <- NULL
+            return(NULL)
+        }
+        if(any(is.na(values$tab$cost))){
+            create_alert("Missing values in 'cost' column")
+            values$tab <- NULL
+        }
+        if(any(is.na(values$tab$cost))){
+            create_alert("Missing values in 'effect' column")
+            values$tab <- NULL
+        }
+        if(any(is.na(values$tab$strategy))){
+            create_alert("Missing values in 'strategy' column")
+            values$tab <- NULL
+        }
+    })
+
     observeEvent(input$start, {
         updateTabItems(session, "menu", "results")
         shinyjs::show("spinner")
@@ -62,9 +79,14 @@ shinyServer(function(session, input, output) {
         hidden(span(id = "spinner", icon(name = "spinner", class = "fa-pulse fa-2x")))
     })
 
+    observe({
+        req(values$means)
+        values$differences <- get_differences(values$means, reference = input$reference)
+    })
+
     output$plotCE <- renderPlot({
         req(values$means)
-        (values$plotCE <- plot_ce(values$means %>% get_differences(reference = input$reference),
+        (values$plotCE <- plot_ce(values$differences,
                 unit_x = input$effUnit, unit_y = input$costUnit, sep1000 = input$sep1000))
     })
 
@@ -83,20 +105,28 @@ shinyServer(function(session, input, output) {
     })
 
     output$allResults <- renderUI({
-        req(values$means)
+        req(values$means, values$differences)
         tagList(
             fluidRow(
                 box(plotOutput("plotCE")),
                 box(plotOutput("plotAC"))
-               # box(plot_ce(values$means %>% get_differences(reference = input$reference)))
            ),
            fluidRow(
                box(
-               uiOutput("options"),
-               downloadButton("download", "Download Figures")
+                uiOutput("options"),
+                downloadButton("download", "Download Figures")
+               ),
+               box(
+                tableOutput("quadrants"),
+                title = "Proportion in each quadrant"
                )
            )
         )
+    })
+
+    output$quadrants <- renderTable({
+            get_quadrant_prop(values$differences,
+                              strategy = setdiff(unique(values$tab$strategy),  input$reference))
     })
 
     output$download <- downloadHandler(

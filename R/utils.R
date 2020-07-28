@@ -9,13 +9,14 @@ get_nmb <- function(threshold, x){
 get_nmb_tbl <- function(x, min, max, by){
   thresholds <- seq.int(min, max, by)
   res <- map_df(thresholds , function(threshold){
-    line <- map_df(x, function(y){
+    lines <- map_df(x, function(y){
       get_nmb(threshold, y)
-    }) %>% apply(1, which.max) %>%
+    }) %>%
+      apply(1, which.max) %>%
       table() %>%
       prop.table() %>%
       as.vector()
-    matrix(line, nrow = 1) %>%
+    matrix(lines, nrow = 1) %>%
       as_tibble()
   })
   names(res) <- names(x)
@@ -28,3 +29,18 @@ get_nmb_tbl <- function(x, min, max, by){
 force_range <- function(x, mini, maxi){
   max(min(x, maxi), mini)
 }
+
+#' @export
+pourcent <- function(nb, symbol = TRUE, round = NULL){
+  map_chr(nb, function(x){
+    if (is.nan(x) | is.na(x)) return("-")
+    if (is.null(round)) round <- 2
+    val <- x * 100
+    val <- if (val > 1E-3) {
+      base::format(val, digits = round, nsmall = round - 2)
+    } else 0
+
+    if (symbol) paste0(val, "%") else val
+  })
+}
+

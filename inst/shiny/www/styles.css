@@ -1,0 +1,18 @@
+.conteneur{
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex
+}
+.conteneur.right {
+  justify-content:flex-end
+}
+.conteneur.center {
+  justify-content:center
+}
+.conteneur.space {
+  justify-content:space-between
+}
+.red {
+   color: 	#8B0000;
+}

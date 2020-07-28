@@ -14,6 +14,9 @@ shinyUI(dashboardPage(
     dashboardBody(
         useShinyjs(),
         #extendShinyjs(),
+        tags$head(
+            includeCSS("www/styles.css")
+        ),
         tabItems(
             tabItem("home",
                     fluidRow(
