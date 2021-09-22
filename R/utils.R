@@ -9,20 +9,21 @@ get_nmb <- function(threshold, x){
 get_nmb_tbl <- function(x, min, max, by){
   thresholds <- seq.int(min, max, by)
   res <- map_df(thresholds , function(threshold){
-    lines <- map_df(x, function(y){
+    lines <- purrr:::map_dfc(x, function(y){
       get_nmb(threshold, y)
     }) %>%
       apply(1, which.max) %>%
       table() %>%
-      prop.table() %>%
-      as.vector()
-    matrix(lines, nrow = 1) %>%
-      as_tibble()
+      prop.table()
+    matrix(lines, nrow = 1, dimnames = list(NULL, names(lines))) %>%
+      as_tibble() -> p
+    purrr::map_dfc(names(x), function(z) dplyr::bind_cols(max(0,p[[z]])))
   })
   names(res) <- names(x)
-  res %>%
-    mutate(threshold = thresholds) %>%
-    gather("strategy", "proportion", -threshold)
+  res
+   res %>%
+     mutate(threshold = thresholds) %>%
+     gather("strategy", "proportion", -threshold)
 }
 
 #' @export
