@@ -13,11 +13,12 @@ get_nmb_tbl <- function(x, min, max, by){
       get_nmb(threshold, y)
     }) %>%
       apply(1, which.max) %>%
+      names(x)[.] %>%
       table() %>%
       prop.table()
     matrix(lines, nrow = 1, dimnames = list(NULL, names(lines))) %>%
       as_tibble() -> p
-    purrr::map_dfc(names(p), function(z) dplyr::bind_cols(max(0,p[[z]])))
+    purrr::map_dfc(names(x), function(z) dplyr::bind_cols(max(0,p[[z]])))
   })
   names(res) <- names(x)
   res
