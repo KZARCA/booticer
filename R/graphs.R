@@ -7,7 +7,7 @@ plot_ce <- function(x, xlab = "Delta Effectiveness", ylab = "Delta Cost", unit_x
   ggplot(x) + aes(x = d_eff, y = d_cost, color = strategy) + geom_point() +
     geom_hline(yintercept = 0, linetype = 2) +
     geom_vline(xintercept = 0, linetype = 2) +
-    scale_y_continuous(labels = function(x) format(x, big.mark = sep1000)) +
+    scale_y_continuous(labels = function(x) format(x, big.mark = sep1000, scientific = FALSE)) +
     xlab(sprintf("%s (%s)", xlab, unit_x)) +
     ylab(sprintf("%s (%s)", ylab, unit_y)) +
     stat_ellipse(data = x %>% filter(strategy != strat_ref),
@@ -40,7 +40,7 @@ plot_ac <- function(x, min = 0, max = 100000, by = (max - min) /100,
   prop_ce <- get_nmb_tbl(x, min, max, by)
   ggplot(prop_ce) + aes(threshold, proportion, color = strategy) + geom_line() +
     scale_y_continuous(limits = c(0,1), labels = scales::percent) +
-    scale_x_continuous(labels = function(x) format(x, big.mark = sep1000)) +
+    scale_x_continuous(labels = function(x) format(x, big.mark = sep1000, scientific = FALSE)) +
     xlab(sprintf("%s (%s)", xlab, unit)) +
     ylab(ylab) +
     theme_bw()
