@@ -1,12 +1,17 @@
 #' @export
 plot_ce <- function(x, xlab = "Delta Effectiveness", ylab = "Delta Cost", unit_x = "QALY",
                     unit_y = "€", sep1000 = " "){
+  strat_ref <- filter(x, d_cost == 0, d_eff == 0) %>%
+    pull() %>%
+    unique()
   ggplot(x) + aes(x = d_eff, y = d_cost, color = strategy) + geom_point() +
     geom_hline(yintercept = 0, linetype = 2) +
     geom_vline(xintercept = 0, linetype = 2) +
     scale_y_continuous(labels = function(x) format(x, big.mark = sep1000)) +
     xlab(sprintf("%s (%s)", xlab, unit_x)) +
     ylab(sprintf("%s (%s)", ylab, unit_y)) +
+    stat_ellipse(data = x %>% filter(strategy != strat_ref),
+                 linetype = 2, linewidth = 1) +
     theme_bw()
 }
 
