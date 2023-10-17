@@ -33,7 +33,7 @@ plot_ac <- function(x, min = 0, max = 100000, by = (max - min) /100,
                     xlab = "Cost-effectiveness Threshold", unit = "€/QALY", sep1000 = " ",
                     ylab = "Probability of strategy being the most cost-effective") {
   prop_ce <- get_nmb_tbl(x, min, max, by)
-  ggplot(prop_ce) + aes(threshold, proportion, color = strategy) + geom_smooth(se = FALSE) +
+  ggplot(prop_ce) + aes(threshold, proportion, color = strategy) + geom_line() +
     scale_y_continuous(limits = c(0,1), labels = scales::percent) +
     scale_x_continuous(labels = function(x) format(x, big.mark = sep1000)) +
     xlab(sprintf("%s (%s)", xlab, unit)) +
